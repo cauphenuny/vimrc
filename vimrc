@@ -113,10 +113,6 @@ inoremap <leader>format <C-O>:! clang-format -i %<CR>
 
 exec 'source ' . g:vim_conf_dir. '/extensions/main.vim'
 
-func SetDate()
-    call append(line(".")-2, "//create time: ".strftime("%c"))
-endfunc
-
 autocmd BufNewFile *.cpp exec 'read ' . g:vim_conf_dir . '/templates/default.cpp'
 autocmd BufNewFile *.cpp normal kddGkk
 autocmd BufNewFile *.c exec 'read ' . g:vim_conf_dir . '/templates/default.c'

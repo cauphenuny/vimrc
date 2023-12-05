@@ -1,1 +1,5 @@
-autocmd FileType c,cpp exec 'source' . g:vim_conf_dir . '/extensions/auto_complete/cpp/on.vim'
+" auto complete
+execute 'source ' . g:vim_conf_dir . '/extensions/auto-complete/main.vim'
+
+" vim-brainfuck
+execute 'source ' . g:vim_conf_dir . '/extensions/vim-brainfuck/main.vim'
