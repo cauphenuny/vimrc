@@ -24,10 +24,15 @@ set incsearch
 
 " ---------------------- Theme and Colors ----------------------
 syntax on
-let g:gruvbox_contrast_dark='soft'
-let g:gruvbox_contrast_light='soft'
+let g:gruvbox_contrast_dark = 'soft'
+let g:gruvbox_contrast_light = 'soft'
+let g:gruvbox_transp_bg = 1
+set laststatus=2
+set noshowmode
+let g:lightline = {
+  \ 'colorscheme': 'gruvbox8',
+  \ }
 colorscheme gruvbox8
-"hi Normal guibg=NONE ctermbg=NONE
 
 " ---------------------- Compile and Run  ----------------------
 function! Compile()
@@ -118,4 +123,3 @@ autocmd BufNewFile *.cpp exec 'read ~/.vim/templates/default.cpp'
 autocmd BufNewFile *.cpp normal kddGkk
 autocmd BufNewFile *.c exec 'read ~/.vim/templates/default.c'
 autocmd BufNewFile *.c normal kddGkk
-
