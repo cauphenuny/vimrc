@@ -14,5 +14,4 @@ add these to `~/.vimrc`:
 ```vim
 let g:vim_conf_dir = $HOME . '/.vim/'
 exec 'source ' . g:vim_conf_dir . "/vimrc"
-unlet g:vim_conf_dir
 ```
