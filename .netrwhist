@@ -1,5 +1,6 @@
 let g:netrw_dirhistmax  =10
-let g:netrw_dirhistcnt =4
+let g:netrw_dirhistcnt =5
+let g:netrw_dirhist_5='/Users/ycp/Tools/brainfuck/include'
 let g:netrw_dirhist_4='/Users/ycp/.config'
 let g:netrw_dirhist_3='/Users/ycp/.oh-my-zsh/themes'
 let g:netrw_dirhist_2='/Users/ycp/.oh-my-zsh'

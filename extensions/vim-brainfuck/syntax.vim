@@ -20,7 +20,7 @@ syn match bfIO /[\.,]/
 syn match bfCell /[><]/
 
 " Match comments
-syn match bfComment /!.*/ contains=bf_todo
+syn match bfComment /[#!;].*/ contains=bfTodo,bfBrackets,bfByte,bfIO,bfCell
 " syn region bf_comment_multiline start=/\/\*/ end=/\*\// contains=bf_todo
 
 " Higlight
