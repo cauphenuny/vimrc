@@ -24,6 +24,8 @@ set incsearch
 
 " ---------------------- Theme and Colors ----------------------
 syntax on
+let g:gruvbox_contrast_dark='soft'
+let g:gruvbox_contrast_light='soft'
 colorscheme gruvbox8
 "hi Normal guibg=NONE ctermbg=NONE
 
