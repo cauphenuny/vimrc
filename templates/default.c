@@ -1,4 +1,3 @@
-// author: hydropek <hydropek@outlook.com>
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>

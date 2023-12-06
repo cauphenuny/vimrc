@@ -164,9 +164,6 @@ source ~/.vim/extensions/main.vim
 
 autocmd BufNewFile *.cpp exec 'read ~/.vim/templates/default.cpp'
 autocmd BufNewFile *.c exec 'read ~/.vim/templates/default.c'
-autocmd BufNewFile *.c,*.cpp {
-    call cursor(1, 1)
-    call setline(1,  '//author:  hydropek <hydropek@outlook.com>')
-    exec 'read !echo "//created: $(date +"\%F \%T")"'
-    call cursor(1, 1)
-}
+autocmd BufNewFile *.c,*.cpp normal kdd 
+autocmd BufNewFile *.c,*.cpp exec 'read !echo "//updated: $(date +\"\%F \%T\")"'
+

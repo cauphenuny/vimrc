@@ -1,4 +1,3 @@
-//author: hydropek <hydropek@outlook.com>
 #include <cstdio>
 #include <cstring>
 #include <iostream>
