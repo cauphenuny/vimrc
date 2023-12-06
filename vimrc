@@ -23,10 +23,9 @@ set incsearch
 
 
 " ---------------------- Theme and Colors ----------------------
-"set t_Co=256
 syntax on
-colorscheme gruvbox
-hi Normal guibg=NONE ctermbg=NONE
+colorscheme gruvbox8
+"hi Normal guibg=NONE ctermbg=NONE
 
 " ---------------------- Compile and Run  ----------------------
 function! Compile()
