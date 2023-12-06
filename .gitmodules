@@ -1,0 +1,6 @@
+[submodule "pack/colors/start/gruvbox8"]
+	path = pack/colors/start/gruvbox8
+	url = https://github.com/lifepillar/vim-gruvbox8.git
+[submodule "pack/plugins/start/lightline"]
+	path = pack/plugins/start/lightline
+	url = https://github.com/itchyny/lightline.vim
