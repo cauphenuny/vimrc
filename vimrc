@@ -35,35 +35,84 @@ let g:lightline = {
 colorscheme gruvbox8
 
 " ---------------------- Compile and Run  ----------------------
-function! Compile()
-"   return g++ %<.cpp -g -DLOCAL_MAC -o %< -Wall -std=c++03"
-     return "g++ %<.cpp -g -DLOCAL_MAC -o %< -Wall -std=c++17"
-"    return g++ %<.cpp -g -DLOCAL_MAC -O2 -o %< -Wall"
-endfunction
+
+let t:cpp = {
+\   'compiler': 'clang++',
+\   'std': 'c++17',
+\   'warning': '-Wall -Wextra',
+\   'option': '-fsanitize=undefined,address',
+\}
+
+let t:c = {
+\   'compiler': 'clang',
+\   'std': 'c11',
+\   'warning': '-Wall -Wextra',
+\   'option': '-fsanitize=undefined,address',
+\}
+
+func! Compile()
+    if &modified == 1
+        exec 'w'
+    endif
+    if &filetype == 'cpp'
+        let cmd = t:cpp.compiler . ' % -o %< -std=' . t:cpp.std . ' ' . t:cpp.warning . ' ' . t:cpp.option
+    elseif &filetype == 'c'
+        let cmd = t:c.compiler . ' % -o %< -std=' . t:c.std . ' ' . t:c.warning . ' ' . t:c.option
+    endif
+    exec '!echo '.cmd.' && '.cmd
+endfunc
+
+func! GetRunCommand()
+    if &filetype == 'python'
+        return 'time python3 %'
+    elseif &filetype == 'cpp' || &filetype == 'c'
+        return 'time ./%<'
+    elseif &filetype == 'sh'
+        return '!zsh %'
+    endif
+endfunc
+
+func! Run()
+    if &modified == 1
+        exec 'w'
+        if &filetype == 'cpp' || &filetype == 'c'
+            call Compile()
+        endif
+    endif
+    let cmd = GetRunCommand()
+    exec '!echo '.cmd.' && '.cmd
+endfunc
+
+func! RunFileIO()
+    if &modified == 1
+        exec 'w'
+        if &filetype == 'cpp' || &filetype == 'c'
+            call Compile()
+        endif
+    endif
+    let cmd = GetRunCommand() . ' < %<.in > %<.out'
+    exec '!echo '.cmd.' && '.cmd
+endfunc
 
 
-map <C-F10> :!./%<<CR>
-"map <F10> <C-F10>
-map <S-F10> :!./%< < %<.in > %<.out 2> %<.err<cr>
-map <F10> :!./%< < %<.in > %<.out<CR>
-map <C-F9> :!<C-R>=Compile()<CR> && ./%<<CR>
-map <F9> :!<C-R>=Compile()<CR> && ./%< < %<.in > %<.out 2> %<.err<CR>
-map <S-F9> :!<C-R>=Compile()<CR> && ./%< < %<.in > %<.out<CR>
+map <F9> :call Compile()<CR>
 imap <F9> <ESC><F9>
-imap <S-F9> <ESC><S-F9>
-imap <C-F9> <ESC><C-F9>
-map <F11> :!<C-R>=Compile()<CR><CR>
-imap <F11> <ESC><F11>
+
+map <F10> :call Run()<CR>
+imap <F10> <ESC><F10>
+
+map <S-F10> :call RunFileIO()<CR>
+imap <S-F10> <ESC><S-F10>
 
 " ---------------------- Test Data ----------------------
-nmap <F12> <C-W>35v:e %<.in<CR>:set nocursorline nocursorcolumn<CR>:sp<CR><C-W>j:e %<.out<CR><C-w>l
+nmap <F12> <C-W>35v:e %<.in<CR>:set nocursorline nocursorcolumn<CR>:w<CR>:sp<CR><C-W>j:e %<.out<CR><C-w>l
 imap <F12> <ESC><F12>a
 nmap <S-F12> 100<C-W>l<C-W>h:wq<CR>:wq<CR>
 imap <S-F12> <ESC><S-F12>a
-nmap <C-F12> <C-W>50v:e %<.err<CR>:set nocursorline nocursorcolumn<CR>:10sp %<.out<CR>:25vs %<.in<cr><c-w>2l
-imap <C-F12> <ESC><C-F12>a
-nmap <C-S-F12> 100<C-W>l<C-W>h:wq<CR>:wq<CR>:wq<CR>
-imap <C-S-F12> <ESC><C-S-F12>a
+" nmap <C-F12> <C-W>50v:e %<.err<CR>:set nocursorline nocursorcolumn<CR>:10sp %<.out<CR>:25vs %<.in<cr><c-w>2l
+" imap <C-F12> <ESC><C-F12>a
+" nmap <C-S-F12> 100<C-W>l<C-W>h:wq<CR>:wq<CR>:wq<CR>
+" imap <C-S-F12> <ESC><C-S-F12>a
 
 " ---------------------- MAP-Functions ----------------------
 map <home> ^
