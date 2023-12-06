@@ -36,7 +36,7 @@ colorscheme gruvbox8
 
 " ---------------------- Compile and Run  ----------------------
 function! Compile()
-"   return "g++ %<.cpp -g -DLOCAL_MAC -o %< -Wall -std=c++03"
+"   return g++ %<.cpp -g -DLOCAL_MAC -o %< -Wall -std=c++03"
      return "g++ %<.cpp -g -DLOCAL_MAC -o %< -Wall -std=c++17"
 "    return g++ %<.cpp -g -DLOCAL_MAC -O2 -o %< -Wall"
 endfunction
