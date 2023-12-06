@@ -111,10 +111,10 @@ inoremap <leader>format <C-O>:! clang-format -i %<CR>
 " " ---------------------- extensions ----------------------
 " 
 
-exec 'source ' . g:vim_conf_dir. '/extensions/main.vim'
+source ~/.vim/extensions/main.vim
 
-autocmd BufNewFile *.cpp exec 'read ' . g:vim_conf_dir . '/templates/default.cpp'
+autocmd BufNewFile *.cpp exec 'read ~/.vim/templates/default.cpp'
 autocmd BufNewFile *.cpp normal kddGkk
-autocmd BufNewFile *.c exec 'read ' . g:vim_conf_dir . '/templates/default.c'
+autocmd BufNewFile *.c exec 'read ~/.vim/templates/default.c'
 autocmd BufNewFile *.c normal kddGkk
 
