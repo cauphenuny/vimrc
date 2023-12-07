@@ -37,59 +37,87 @@ colorscheme gruvbox8
 " ---------------------- Compile and Run  ----------------------
 
 let t:cpp = {
-\   'compiler': 'clang++',
-\   'std': 'c++17',
-\   'warning': '-Wall -Wextra',
-\   'option': '-fsanitize=undefined,address',
+\   'compiler': 'g++',
+\   'std': 'c++20',
+\   'opt': ['-Wall', '-Wextra'],
+\   'ext': {'-fsanitize': ['undefined', 'address'],},
 \}
 
 let t:c = {
-\   'compiler': 'clang',
+\   'compiler': 'gcc',
 \   'std': 'c11',
-\   'warning': '-Wall -Wextra',
-\   'option': '-fsanitize=undefined,address',
+\   'opt': ['-Wall', '-Wextra'],
+\   'ext': {'-fsanitize': ['undefined', 'address'],},
 \}
+
+func! GetOption()
+    if &filetype == 'cpp'
+        let env = t:cpp
+    else
+        let env = t:c
+    endif
+    let opts = join(env.opt, ' ')
+    for key in keys(env.ext)
+        let opts = opts . key . '=' . join(env.ext.key, ',') . ' '
+    endfor
+    return opts
+endfunc
+
+" func! MemDebug(flag)
+"     if &filetype == 'cpp'
+"         let opts = t:cpp.ext
+"     else
+"         let opts = t:c.ext
+"     endif
+"     if a:flag == 1
+"         if has_key(opts, '-fsanitize') == 0 || index(opts.'-fsanitize', 'undefined') == -1
+"             opts.'-fsanitize' += 'undefined'
+"         endif
+"         if index(opts.'-fsanitize', 'address') == -1
+"             opts.'-fsanitize' += 'address'
+"         endif
+"     else
+"         if has_key(opts, '-fsanitize') == 1
+"             unlet
+"         endif
+"     endif
+" endfunc
+
+func! EchoRun(cmd)
+    exec '!echo '.cmd.' && '.cmd
+endfunc
 
 func! Compile()
     if &modified == 1
         exec 'w'
     endif
     if &filetype == 'cpp'
-        let cmd = t:cpp.compiler . ' % -o %< -std=' . t:cpp.std . ' ' . t:cpp.warning . ' ' . t:cpp.option
+        let env = t:cpp
     elseif &filetype == 'c'
-        let cmd = t:c.compiler . ' % -o %< -std=' . t:c.std . ' ' . t:c.warning . ' ' . t:c.option
+        let env = t:c
     endif
+    let opts = GetOption()
+    let cmd = env.compiler . ' % -o %< -std=' . env.std . ' ' . opts
     exec '!echo '.cmd.' && '.cmd
 endfunc
 
 func! GetRunCommand()
     if &filetype == 'python'
-        return 'time python3 %'
+        return 'time python3 ./%'
     elseif &filetype == 'cpp' || &filetype == 'c'
         return 'time ./%<'
     elseif &filetype == 'sh'
-        return '!zsh %'
+        return '!zsh ./%'
     endif
 endfunc
-
-func! Run()
-    let cmd = GetRunCommand()
-    exec '!echo '.cmd.' && '.cmd
-endfunc
-
-func! RunFileIO()
-    let cmd = GetRunCommand() . ' < %<.in > %<.out'
-    exec '!echo '.cmd.' && '.cmd
-endfunc
-
 
 map <F9> :call Compile()<CR>
 imap <F9> <ESC><F9>
 
-map <F10> :call Run()<CR>
+map <F10> :call EchoRun(GetRunCommand())<CR>
 imap <F10> <ESC><F10>
 
-map <S-F10> :call RunFileIO()<CR>
+map <S-F10> :call EchoRun(GetRunCommand() . ' < %<.in > %<.out')<CR>
 imap <S-F10> <ESC><S-F10>
 
 map <F11> :call Compile()<CR>:call RunFileIO()<CR>
@@ -158,7 +186,6 @@ inoremap <leader>freopen freopen("<C-r>%<C-w>in", "r", stdin);<CR>freopen("<c-r>
 inoremap <leader>format <C-O>:! clang-format -i %<CR>
 
 " " ---------------------- extensions ----------------------
-" 
 
 source ~/.vim/extensions/main.vim
 
@@ -166,7 +193,6 @@ autocmd BufNewFile *.cpp exec 'read ~/.vim/templates/default.cpp'
 autocmd BufNewFile *.c exec 'read ~/.vim/templates/default.c'
 autocmd BufNewFile *.c,*.cpp {
     call cursor(1, 1)
-    call setline(1,  '//author:  hydropek <hydropek@outlook.com>')
-    exec 'read !echo "//created: $(date +"\%F \%T")"'
-    call cursor(1, 1)
+    call setline(1, '//author:  hydropek <hydropek@outlook.com>')
+    # call append(2, "//created: ".strftime("%F %T"))
 }
