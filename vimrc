@@ -35,34 +35,46 @@ colorscheme gruvbox8
 
 " ---------------------- Compile and Run  ----------------------
 
-let t:cpp = {
-\   'compiler': 'clang++',
-\   'std': 'c++17',
-\   'opts': ['-Wall', '-Wextra'],
+let t:compile = {
+\   'opts': ['-Wall', '-Wextra', '-Wshadow', '-Wconversion'],
 \}
 
-let t:c = {
-\   'compiler': 'clang',
-\   'std': 'c11',
-\   'opts': ['-Wall', '-Wextra'],
-\}
+autocmd Filetype cpp {
+    t:compile.compiler = 'clang++'
+    t:compile.std = 'c++17'
+}
 
-func! EditOpt(opt)
-    if &filetype == 'cpp'
-        let opts = t:cpp.opts
-    else
-        let opts = t:c.opts
-    endif
-    let idx = index(opts, a:opt)
+autocmd Filetype c {
+    t:compile.compiler = 'clang'
+    t:compile.std = 'c99'
+}
+
+func! OptOn(opt)
+    let idx = index(t.compile.opts, a:opt)
     if idx == -1
-        call add(opts, a:opt)
+        call add(t.compile.opts, a:opt)
+    endif
+endfunc
+
+func! OptOff(opt)
+    let idx = index(t.compile.opts, a:opt)
+    if idx != -1
+        call remove(t.compile.opts, idx)
+    endif
+endfunc
+
+func! OptEdit(opt)
+    let idx = index(t.compile.opts, a:opt)
+    if idx == -1
+        call add(t.compile.opts, a:opt)
     else
-        call remove(opts, idx)
+        call remove(t.compile.opts, idx)
     endif
 endfunc
 
 func! MemDebug()
-    call EditOpt('-fsanitize=undefined,address')
+    call OptEdit('-fsanitize=undefined,address,leak,null,bounds')
+    call OptEdit('-fno-omit-frame-pointer')
 endfunc
 
 func! EchoRun(cmd)
@@ -77,10 +89,8 @@ func! Compile()
     if &modified == 1
         exec 'w'
     endif
-    if &filetype == 'cpp'
-        call EchoRun(t:cpp.compiler.' % -o %< -std='.t:cpp.std.' '.join(t:cpp.opts))
-    elseif &filetype == 'c'
-        call EchoRun(t:c.compiler.' % -o %< -std='.t:c.std.' '.join(t:c.opts))
+    if &filetype == 'cpp' || &filetype == 'c'
+        call EchoRun(t:compile.compiler.' % -o %< -std='.t:compile.std.' '.join(t:compile.opts))
     else
         echo 'Can not compile this file.'
         return
