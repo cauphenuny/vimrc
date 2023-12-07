@@ -47,9 +47,18 @@ let t:c = {
 \   'opts': ['-Wall', '-Wextra'],
 \}
 
-func! GetOption(env)
-    let opts = join(a:env.opts, ' ')
-    return opts
+func! EditOpt(opt)
+    if &filetype == 'cpp'
+        let opts = t:cpp.opts
+    else
+        let opts = t:c.opts
+    endif
+    let idx = index(opts, a:opt)
+    if idx == -1
+        call add(opts, a:opt)
+    else
+        call remove(opts, idx)
+    endif
 endfunc
 
 func! MemDebug(flag)
@@ -83,13 +92,9 @@ func! Compile()
         exec 'w'
     endif
     if &filetype == 'cpp'
-        let opts = GetOption(t:cpp)
-        let cmd = t:cpp.compiler . ' % -o %< -std=' . t:cpp.std . ' ' . opts
-        call EchoRun(cmd)
+        call EchoRun(t:cpp.compiler.' % -o %< -std='.t:cpp.std.' '.join(t:cpp.opts))
     elseif &filetype == 'c'
-        let opts = GetOption(t:c)
-        let cmd = t:c.compiler . ' % -o %< -std=' . t:c.std . ' ' . opts
-        call EchoRun(cmd)
+        call EchoRun(t:c.compiler.' % -o %< -std='.t:c.std.' '.join(t:c.opts))
     else
         echo 'Can not compile this file.'
         return
@@ -102,7 +107,7 @@ func! GetRunCommand()
     elseif &filetype == 'cpp' || &filetype == 'c'
         return 'time ./%<'
     elseif &filetype == 'sh'
-        return '!zsh ./%'
+        return 'zsh ./%'
     endif
 endfunc
 
