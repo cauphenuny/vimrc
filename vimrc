@@ -61,22 +61,8 @@ func! EditOpt(opt)
     endif
 endfunc
 
-func! MemDebug(flag)
-    if &filetype == 'cpp'
-        let opts = t:cpp.opts
-    else
-        let opts = t:c.opts
-    endif
-    if a:flag == 1
-        if index(opts, '-fsanitize=undefined,address') == -1
-            call add(opts, '-fsanitize=undefined,address')
-        endif
-    else
-        let idx = index(opts, '-fsanitize=undefined,address')
-        if idx != -1
-            call remove(opts, idx)
-        endif
-    endif
+func! MemDebug()
+    call EditOpt('-fsanitize=undefined,address')
 endfunc
 
 func! EchoRun(cmd)
