@@ -5,7 +5,6 @@ set showcmd
 set mouse=a
 set cursorline
 "set cursorcolumn
-set nocompatible
 
 set expandtab
 set smarttab
@@ -37,54 +36,46 @@ colorscheme gruvbox8
 " ---------------------- Compile and Run  ----------------------
 
 let t:cpp = {
-\   'compiler': 'g++',
-\   'std': 'c++20',
-\   'opt': ['-Wall', '-Wextra'],
-\   'ext': {'-fsanitize': ['undefined', 'address'],},
+\   'compiler': 'clang++',
+\   'std': 'c++17',
+\   'opts': ['-Wall', '-Wextra'],
 \}
 
 let t:c = {
-\   'compiler': 'gcc',
+\   'compiler': 'clang',
 \   'std': 'c11',
-\   'opt': ['-Wall', '-Wextra'],
-\   'ext': {'-fsanitize': ['undefined', 'address'],},
+\   'opts': ['-Wall', '-Wextra'],
 \}
 
-func! GetOption()
-    if &filetype == 'cpp'
-        let env = t:cpp
-    else
-        let env = t:c
-    endif
-    let opts = join(env.opt, ' ')
-    for key in keys(env.ext)
-        let opts = opts . key . '=' . join(env.ext.key, ',') . ' '
-    endfor
+func! GetOption(env)
+    let opts = join(a:env.opts, ' ')
     return opts
 endfunc
 
-" func! MemDebug(flag)
-"     if &filetype == 'cpp'
-"         let opts = t:cpp.ext
-"     else
-"         let opts = t:c.ext
-"     endif
-"     if a:flag == 1
-"         if has_key(opts, '-fsanitize') == 0 || index(opts.'-fsanitize', 'undefined') == -1
-"             opts.'-fsanitize' += 'undefined'
-"         endif
-"         if index(opts.'-fsanitize', 'address') == -1
-"             opts.'-fsanitize' += 'address'
-"         endif
-"     else
-"         if has_key(opts, '-fsanitize') == 1
-"             unlet
-"         endif
-"     endif
-" endfunc
+func! MemDebug(flag)
+    if &filetype == 'cpp'
+        let opts = t:cpp.opts
+    else
+        let opts = t:c.opts
+    endif
+    if a:flag == 1
+        if index(opts, '-fsanitize=undefined,address') == -1
+            call add(opts, '-fsanitize=undefined,address')
+        endif
+    else
+        let idx = index(opts, '-fsanitize=undefined,address')
+        if idx != -1
+            call remove(opts, idx)
+        endif
+    endif
+endfunc
 
 func! EchoRun(cmd)
-    exec '!echo '.cmd.' && '.cmd
+    if a:cmd != ''
+        exec '!echo '.a:cmd.' && '.a:cmd
+    else
+        echo 'Invalid command.'
+    endif
 endfunc
 
 func! Compile()
@@ -92,13 +83,17 @@ func! Compile()
         exec 'w'
     endif
     if &filetype == 'cpp'
-        let env = t:cpp
+        let opts = GetOption(t:cpp)
+        let cmd = t:cpp.compiler . ' % -o %< -std=' . t:cpp.std . ' ' . opts
+        call EchoRun(cmd)
     elseif &filetype == 'c'
-        let env = t:c
+        let opts = GetOption(t:c)
+        let cmd = t:c.compiler . ' % -o %< -std=' . t:c.std . ' ' . opts
+        call EchoRun(cmd)
+    else
+        echo 'Can not compile this file.'
+        return
     endif
-    let opts = GetOption()
-    let cmd = env.compiler . ' % -o %< -std=' . env.std . ' ' . opts
-    exec '!echo '.cmd.' && '.cmd
 endfunc
 
 func! GetRunCommand()
@@ -121,9 +116,8 @@ map <S-F10> :call EchoRun(GetRunCommand() . ' < %<.in > %<.out')<CR>
 imap <S-F10> <ESC><S-F10>
 
 map <F11> :call Compile()<CR>:call RunFileIO()<CR>
-imap <F9> <ESC><F11>
+imap <F11> <ESC><F11>
 map <S-F11> :call Compile()<CR>:call RunFileIO()<CR>
-imap <S-F11> :call Compile()<CR>:call RunFileIO()<CR>
 imap <S-F11> <ESC><S-F11>
 
 " ---------------------- Test Data ----------------------

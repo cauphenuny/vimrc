@@ -1,6 +1,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #define debugf(...) fprintf(stderr, __VA_ARGS__)
 #define wlog(fmt, ...) fprintf(stderr, "<%s:%d> " fmt "\n", __func__, __LINE__, ##__VA_ARGS__)
 int read() {
