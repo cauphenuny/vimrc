@@ -5,7 +5,7 @@
 #define debug(x) cerr << #x << " = " << (x) << " "
 #define debugln(x) cerr << #x << " = " << (x) << endl
 #define debugf(...) fprintf(stderr, __VA_ARGS__)
-#define wlog(fmt, ...) \
+#define debugv(fmt, ...) \
     fprintf(stderr, "<%s:%d> " fmt "\n", __func__, __LINE__, ## __VA_ARGS__)
 using namespace std;
 template<typename T1, typename T2>

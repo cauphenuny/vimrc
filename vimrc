@@ -7,6 +7,7 @@ set cursorline
 "set cursorcolumn
 
 set expandtab
+autocmd FileType make set noexpandtab
 set smarttab
 set autoindent
 set smartindent
@@ -35,46 +36,104 @@ colorscheme gruvbox8
 
 " ---------------------- Compile and Run  ----------------------
 
-let t:compile = {
-\   'opts': ['-Wall', '-Wextra', '-Wshadow', '-Wconversion'],
+" C Compiling Options, buffer variable
+let b:cc = {
+\   'opts': ['-Wall', '-Wextra', '-Wshadow'],
+\   'pkgs': [],
 \}
 
 autocmd Filetype cpp {
-    t:compile.compiler = 'clang++'
-    t:compile.std = 'c++17'
+    b:cc.compiler = 'clang++'
+    b:cc.std = 'c++17'
 }
 
 autocmd Filetype c {
-    t:compile.compiler = 'clang'
-    t:compile.std = 'c99'
+    b:cc.compiler = 'clang'
+    b:cc.std = 'c99'
 }
 
+let g:ccenv_dir = expand('~/.vim/cache/ccenv/')
+
+func! CCSetUp()
+    if !isdirectory(g:ccenv_dir)
+        call system('mkdir -p '.g:ccenv_dir)
+    endif
+endfunc
+
+autocmd FileType c,cpp call CCSetUp()
+
+func! SaveOption()
+    let name = split(system('echo '.expand('%:p').' | md5sum'))[0]
+    let file = g:ccenv_dir . name
+    call system('touch '.file)
+    let info = b:cc.compiler . ' ' . b:cc.std . '\n' . join(b:cc.opts).'\n'.join(b:cc.pkgs)
+    call system('echo "'.info.'" > '.file)
+endfunc
+
+func! ReadOption()
+    let name = split(system('echo '.expand('%:p').' | md5sum'))[0]
+    let file = g:ccenv_dir . name
+    if filereadable(file)
+        let lines = readfile(file)
+        let basic = split(lines[0])
+        let b:cc.opts = split(lines[1])
+        let b:cc.pkgs = split(lines[2])
+        let b:cc.compiler = basic[0]
+        let b:cc.std = basic[1]
+    endif
+endfunc
+
+autocmd FileType c,cpp call ReadOption()
+
 func! OptOn(opt)
-    let idx = index(t.compile.opts, a:opt)
+    let idx = index(b:cc.opts, a:opt)
     if idx == -1
-        call add(t.compile.opts, a:opt)
+        call add(b:cc.opts, a:opt)
+        call SaveOption()
     endif
 endfunc
 
 func! OptOff(opt)
-    let idx = index(t.compile.opts, a:opt)
+    let idx = index(b:cc.opts, a:opt)
     if idx != -1
-        call remove(t.compile.opts, idx)
+        call remove(b:cc.opts, idx)
+        call SaveOption()
     endif
 endfunc
 
-func! OptEdit(opt)
-    let idx = index(t.compile.opts, a:opt)
+func! OptSwitch(opt)
+    let idx = index(b:cc.opts, a:opt)
     if idx == -1
-        call add(t.compile.opts, a:opt)
+        call add(b:cc.opts, a:opt)
     else
-        call remove(t.compile.opts, idx)
+        call remove(b:cc.opts, idx)
     endif
+    call SaveOption()
+endfunc
+
+func! PkgLink(pkg)
+    let idx = index(b:cc.pkgs, a:pkg)
+    if idx == -1
+        call add(b:cc.pkgs, a:pkg)
+    else
+        call remove(b:cc.pkgs, idx)
+    endif
+    call SaveOption()
+endfunc
+
+func! SetCompiler(cpl)
+    let b:cc.compiler = a:cpl
+    call SaveOption()
+endfunc
+
+func! SetStd(std)
+    let b:cc.std = a:std
+    call SaveOption()
 endfunc
 
 func! MemDebug()
-    call OptEdit('-fsanitize=undefined,address,leak,null,bounds')
-    call OptEdit('-fno-omit-frame-pointer')
+    call OptSwitch('-fsanitize=undefined,address,leak,null,bounds')
+    call OptSwitch('-fno-omit-frame-pointer')
 endfunc
 
 func! EchoRun(cmd)
@@ -85,12 +144,22 @@ func! EchoRun(cmd)
     endif
 endfunc
 
+func! GetCompileOption()
+    let opts = join(b:cc.opts)
+    for pkg in b:cc.pkgs
+        let opts .= ' $(pkg-config --cflags --libs '.pkg.')'
+    endfor
+    return opts
+endfunc
+
 func! Compile()
-    if &modified == 1
-        exec 'w'
-    endif
+    exec 'w'
     if &filetype == 'cpp' || &filetype == 'c'
-        call EchoRun(t:compile.compiler.' % -o %< -std='.t:compile.std.' '.join(t:compile.opts))
+        if filereadable(expand("./Makefile"))
+            call EchoRun('make')
+        else
+            call EchoRun(b:cc.compiler.' % -o %< -std='.b:cc.std.' '.GetCompileOption())
+        endif
     else
         echo 'Can not compile this file.'
         return
@@ -98,10 +167,14 @@ func! Compile()
 endfunc
 
 func! GetRunCommand()
-    if &filetype == 'python'
+    if &filetype == 'cpp' || &filetype == 'c'
+        if filereadable(expand("./Makefile"))
+            return 'make run'
+        else
+            return 'time ./%<'
+        endif
+    elseif &filetype == 'python'
         return 'time python3 ./%'
-    elseif &filetype == 'cpp' || &filetype == 'c'
-        return 'time ./%<'
     elseif &filetype == 'sh'
         return 'zsh ./%'
     endif
@@ -116,10 +189,10 @@ imap <F10> <ESC><F10>
 map <S-F10> :call EchoRun(GetRunCommand() . ' < %<.in > %<.out')<CR>
 imap <S-F10> <ESC><S-F10>
 
-map <F11> :call Compile()<CR>:call RunFileIO()<CR>
-imap <F11> <ESC><F11>
-map <S-F11> :call Compile()<CR>:call RunFileIO()<CR>
-imap <S-F11> <ESC><S-F11>
+map <F8> <F9><F10>
+imap <F8> <ESC><F8>
+map <S-F8> <F9><S-F10>
+imap <S-F8> <ESC><S-F8>
 
 " ---------------------- Test Data ----------------------
 nmap <F12> <C-W>35v:e %<.in<CR>:set nocursorline nocursorcolumn<CR>:w<CR>:sp<CR><C-W>j:e %<.out<CR><C-w>l
@@ -184,10 +257,26 @@ inoremap <leader>format <C-O>:! clang-format -i %<CR>
 
 source ~/.vim/extensions/main.vim
 
-autocmd BufNewFile *.cpp exec 'read ~/.vim/templates/default.cpp'
-autocmd BufNewFile *.c exec 'read ~/.vim/templates/default.c'
-autocmd BufNewFile *.c,*.cpp {
+autocmd BufNewFile Makefile {
+    exec 'read ~/.vim/templates/Makefile'
+    normal kdd
     call cursor(1, 1)
-    call setline(1, '//author:  hydropek <hydropek@outlook.com>')
-    # call append(2, "//created: ".strftime("%F %T"))
+}
+autocmd BufNewFile *.cpp {
+    call setline(1, "// author: hydropek <hydropek@outlook.com>")
+    exec 'read ~/.vim/templates/default.cpp'
+    call cursor(1, 1)
+}
+autocmd BufNewFile *.c {
+    call setline(1, "// author: hydropek <hydropek@outlook.com>")
+    exec 'read ~/.vim/templates/default.c'
+    call cursor(1, 1)
+}
+autocmd BufNewFile *.py {
+    call setline(1, '#!/usr/bin/env python3')
+    call setline(2, "# author: hydropek <hydropek@outlook.com>")
+}
+autocmd BufNewFile *.sh {
+    call setline(1, '#!/usr/bin/env zsh')
+    call setline(2, "# author: hydropek <hydropek@outlook.com>")
 }
