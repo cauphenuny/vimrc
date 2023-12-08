@@ -240,7 +240,6 @@ set backspace=indent,eol,start whichwrap+=<,>,[,]
 
 " ---------------------- My Functions --------------------------
 inoremap <leader>memset <ESC><Right>b"aywdwamemset(<C-R>a, 0, sizeof(<C-R>a));
-inoremap <leader>for for (int i = 1; i <= n; i++) {<CR>}<up><end><cr>
 nnoremap <leader>s <Right>b"bye/\<<C-r>b\><CR>
 inoremap <leader>s <ESC><Right>b"bye/\<<C-r>b\><CR>
 nnoremap <leader>m I(<ESC>A<left>) %= mod<ESC>j
