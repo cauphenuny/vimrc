@@ -1,4 +1,4 @@
-" ---------------------- Global settings ----------------------
+" ---------------------- Global settings -----------------------
 set number
 set ruler
 set showcmd
@@ -194,7 +194,7 @@ imap <F8> <ESC><F8>
 map <S-F8> <F9><S-F10>
 imap <S-F8> <ESC><S-F8>
 
-" ---------------------- Test Data ----------------------
+" ---------------------- Test Data -----------------------------
 nmap <F12> <C-W>35v:e %<.in<CR>:set nocursorline nocursorcolumn<CR>:w<CR>:sp<CR><C-W>j:e %<.out<CR><C-w>l
 imap <F12> <ESC><F12>a
 nmap <S-F12> 100<C-W>l<C-W>h:wq<CR>:wq<CR>
@@ -204,7 +204,7 @@ imap <S-F12> <ESC><S-F12>a
 " nmap <C-S-F12> 100<C-W>l<C-W>h:wq<CR>:wq<CR>:wq<CR>
 " imap <C-S-F12> <ESC><C-S-F12>a
 
-" ---------------------- MAP-Functions ----------------------
+" ---------------------- MAP-Functions -------------------------
 map <home> ^
 imap <home> <c-o>^
 nmap <tab> :
@@ -238,7 +238,7 @@ nnoremap <S-F8> :wa<CR>
 inoremap <c-f> <c-n>
 set backspace=indent,eol,start whichwrap+=<,>,[,]
 
-" ---------------------- My Functions ----------------------
+" ---------------------- My Functions --------------------------
 inoremap <leader>memset <ESC><Right>b"aywdwamemset(<C-R>a, 0, sizeof(<C-R>a));
 inoremap <leader>for for (int i = 1; i <= n; i++) {<CR>}<up><end><cr>
 nnoremap <leader>s <Right>b"bye/\<<C-r>b\><CR>
@@ -253,7 +253,7 @@ vnoremap <leader>h <C-V>^2ld
 inoremap <leader>freopen freopen("<C-r>%<C-w>in", "r", stdin);<CR>freopen("<c-r>%<c-w>out", "w", stdout);
 inoremap <leader>format <C-O>:! clang-format -i %<CR>
 
-" " ---------------------- extensions ----------------------
+" ---------------------- extensions ----------------------------
 
 source ~/.vim/extensions/main.vim
 
@@ -262,21 +262,22 @@ autocmd BufNewFile Makefile {
     normal kdd
     call cursor(1, 1)
 }
+let g:author = "hydropek <hydropek@outlook.com>"
 autocmd BufNewFile *.cpp {
-    call setline(1, "// author: hydropek <hydropek@outlook.com>")
+    call setline(1, "// author: " .. g:author)
     exec 'read ~/.vim/templates/default.cpp'
     call cursor(1, 1)
 }
 autocmd BufNewFile *.c {
-    call setline(1, "// author: hydropek <hydropek@outlook.com>")
+    call setline(1, "// author: " .. g:author)
     exec 'read ~/.vim/templates/default.c'
     call cursor(1, 1)
 }
 autocmd BufNewFile *.py {
     call setline(1, '#!/usr/bin/env python3')
-    call setline(2, "# author: hydropek <hydropek@outlook.com>")
+    call setline(2, "# author: " .. g:author)
 }
 autocmd BufNewFile *.sh {
     call setline(1, '#!/usr/bin/env zsh')
-    call setline(2, "# author: hydropek <hydropek@outlook.com>")
+    call setline(2, "# author: " .. g:author)
 }
