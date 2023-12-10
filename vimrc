@@ -5,6 +5,7 @@ set showcmd
 set mouse=a
 set cursorline
 "set cursorcolumn
+set nocompatible
 
 set expandtab
 autocmd FileType make set noexpandtab
@@ -36,7 +37,7 @@ colorscheme gruvbox8
 
 " ---------------------- Compile and Run  ----------------------
 
-" C Compiling Options, buffer variable
+" C Compiling Options (variable in certain buffer)
 let b:cc = {
 \   'opts': ['-Wall', '-Wextra', '-Wshadow'],
 \   'pkgs': [],
@@ -58,6 +59,10 @@ func! CCSetUp()
     if !isdirectory(g:ccenv_dir)
         call system('mkdir -p '.g:ccenv_dir)
     endif
+endfunc
+
+func! CCClear()
+    call system('rm '.g:ccenv_dir.'*')
 endfunc
 
 autocmd FileType c,cpp call CCSetUp()
@@ -153,13 +158,17 @@ func! GetCompileOption()
 endfunc
 
 func! Compile()
-    exec 'w'
+    if &modified
+        exec 'w'
+    endif
     if &filetype == 'cpp' || &filetype == 'c'
         if filereadable(expand("./Makefile"))
             call EchoRun('make')
         else
             call EchoRun(b:cc.compiler.' % -o %< -std='.b:cc.std.' '.GetCompileOption())
         endif
+    elseif &filetype == 'haskell'
+        call EchoRun('ghc %')
     else
         echo 'Can not compile this file.'
         return
@@ -173,10 +182,12 @@ func! GetRunCommand()
         else
             return 'time ./%<'
         endif
+    elseif &filetype == 'haskell'
+        return 'time ./%<'
     elseif &filetype == 'python'
-        return 'time python3 ./%'
+        return 'time python3 %'
     elseif &filetype == 'sh'
-        return 'zsh ./%'
+        return 'zsh %'
     endif
 endfunc
 
@@ -231,10 +242,6 @@ map <C-h> 7h
 map <C-l> 7l
 nnoremap <Space> :
 vmap <BS> c
-inoremap <F8> <Space><C-O>s<C-O>:update<CR>
-nnoremap <F8> :update<CR>
-inoremap <S-F8> <C-O>:wa<CR>
-nnoremap <S-F8> :wa<CR>
 inoremap <c-f> <c-n>
 set backspace=indent,eol,start whichwrap+=<,>,[,]
 
@@ -255,6 +262,9 @@ inoremap <leader>format <C-O>:! clang-format -i %<CR>
 " ---------------------- extensions ----------------------------
 
 source ~/.vim/extensions/main.vim
+if filereadable(expand('~/.vim/extensions/local.vim'))
+    source ~/.vim/extensions/local.vim
+endif
 
 autocmd BufNewFile Makefile {
     exec 'read ~/.vim/templates/Makefile'

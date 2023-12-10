@@ -2,3 +2,5 @@
 .netrwhist
 cache/
 **/*.swp
+extensions/local.vim
+bundle/
