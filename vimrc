@@ -1,27 +1,72 @@
-" ---------------------- Global settings -----------------------
-set number
-set ruler
-set showcmd
-set mouse=a
-set cursorline
-"set cursorcolumn
-set nocompatible
+source ~/.vim/common_vimrc 
 
-set expandtab
-autocmd FileType make set noexpandtab
-set smarttab
-set autoindent
-set smartindent
 set tabstop=4
 set softtabstop=4
 set shiftwidth=4
+autocmd FileType yaml {
+    set tabstop=2
+    set softtabstop=2
+    set shiftwidth=2
+}
 
-set autochdir
-set autowrite
-set autoread
-set hlsearch
-set incsearch
+if exists('$TMUX')
+  let &t_SI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=1\x7\<Esc>\\"
+  let &t_EI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=0\x7\<Esc>\\"
+else
+  let &t_SI = "\<Esc>]50;CursorShape=1\x7"
+  let &t_EI = "\<Esc>]50;CursorShape=0\x7"
+endif
 
+set rtp+=/opt/homebrew/opt/fzf
+
+" ---------------------- Map Functions ----------------------
+
+
+" Get filename
+abbr ,f <C-R>=expand("%:")<left><left>
+" Get current working dir
+abbr ,c <C-R>=getcwd()<cr>
+
+" Generate UUID
+abbr ,g <C-R>=substitute(system('uuidgen'), '\n\+$', '', '')<cr>
+" Get time
+abbr ,d <C-R>=substitute(system('LC_TIME=en_US.UTF-8 date'), '\n\+$', '', '')<cr>
+
+" Switch modifiable attribute
+nnoremap <silent> ,m :setl ma! ma?<cr>
+
+" Convert MACROS from iden-tifiers to IDEN_TIFIERS
+nnoremap ,u mpgUiW"pciW<C-R>=substitute(@p,'-','_','ge')<CR><ESC>`p:delm p<cr>
+inoremap ,u <ESC>mpgUiW"pciW<C-R>=substitute(@p,'-','_','ge')<CR><ESC>`p:delm p<CR>a
+
+" ---------------------- Easy Motion Settings ----------------------
+
+map  / <Plug>(easymotion-sn)
+omap / <Plug>(easymotion-tn)
+" Gif config
+nmap s <Plug>(easymotion-s2)
+nmap t <Plug>(easymotion-t2)
+
+" These `n` & `N` mappings are options. You do not have to map `n` & `N` to EasyMotion.
+" Without these mappings, `n` & `N` works fine. (These mappings just provide
+" different highlight method and have some other features )
+map  n <Plug>(easymotion-next)
+map  N <Plug>(easymotion-prev)
+
+" Gif config
+
+map <space> <leader>
+
+nmap s <Plug>(easymotion-s)
+
+map <leader>noh :noh
+map <leader>w :w
+map <Leader>l <Plug>(easymotion-lineforward)
+map <Leader>j <Plug>(easymotion-j)
+map <Leader>k <Plug>(easymotion-k)
+map <Leader>h <Plug>(easymotion-linebackward)
+
+let g:EasyMotion_startofline = 0 " keep cursor column when JK motion
 
 " ---------------------- Theme and Colors ----------------------
 syntax on
@@ -38,14 +83,15 @@ colorscheme gruvbox8
 " ---------------------- Compile and Run  ----------------------
 
 " C Compiling Options (variable in certain buffer)
-let b:cc = {
-\   'opts': ['-Wall', '-Wextra', '-Wshadow'],
-\   'pkgs': [],
-\}
+autocmd Filetype c,cpp {
+    b:cc = {}
+    b:cc.opts = ['-Wall', '-Wextra', '-Wshadow', '-DLOCAL']
+    b:cc.pkgs = []
+}
 
 autocmd Filetype cpp {
     b:cc.compiler = 'clang++'
-    b:cc.std = 'c++17'
+    b:cc.std = 'c++20'
 }
 
 autocmd Filetype c {
@@ -68,7 +114,7 @@ endfunc
 autocmd FileType c,cpp call CCSetUp()
 
 func! SaveOption()
-    let name = split(system('echo '.expand('%:p').' | md5sum'))[0]
+    let name = split(system('pwd | md5sum'))[0]
     let file = g:ccenv_dir . name
     call system('touch '.file)
     let info = b:cc.compiler . ' ' . b:cc.std . '\n' . join(b:cc.opts).'\n'.join(b:cc.pkgs)
@@ -76,7 +122,7 @@ func! SaveOption()
 endfunc
 
 func! ReadOption()
-    let name = split(system('echo '.expand('%:p').' | md5sum'))[0]
+    let name = split(system('pwd | md5sum'))[0]
     let file = g:ccenv_dir . name
     if filereadable(file)
         let lines = readfile(file)
@@ -143,7 +189,7 @@ endfunc
 
 func! EchoRun(cmd)
     if a:cmd != ''
-        exec '!echo '.a:cmd.' && '.a:cmd
+        exec '!echo "'.a:cmd.'" && '.a:cmd
     else
         echo 'Invalid command.'
     endif
@@ -157,26 +203,31 @@ func! GetCompileOption()
     return opts
 endfunc
 
-func! Compile()
+func! GetCompileCommand()
     if &modified
         exec 'w'
     endif
-    if &filetype == 'cpp' || &filetype == 'c'
+    if &filetype == 'cpp' || &filetype == 'c' || &filetype == 'make'
         if filereadable(expand("./Makefile"))
-            call EchoRun('make')
+            return 'make'
         else
-            call EchoRun(b:cc.compiler.' % -o %< -std='.b:cc.std.' '.GetCompileOption())
+            return b:cc.compiler.' % -o %< -std='.b:cc.std.' '.GetCompileOption()
         endif
     elseif &filetype == 'haskell'
-        call EchoRun('ghc %')
+        return 'ghc %'
+    elseif &filetype == 'java'
+        return 'javac %'
+    elseif &filetype == 'html'
+        return 'open %'
+    elseif &filetype == 'go'
+        return 'go build %'
     else
-        echo 'Can not compile this file.'
-        return
+        return ''
     endif
 endfunc
 
 func! GetRunCommand()
-    if &filetype == 'cpp' || &filetype == 'c'
+    if &filetype == 'cpp' || &filetype == 'c' || &filetype == 'make'
         if filereadable(expand("./Makefile"))
             return 'make run'
         else
@@ -186,12 +237,16 @@ func! GetRunCommand()
         return 'time ./%<'
     elseif &filetype == 'python'
         return 'time python3 %'
+    elseif &filetype == 'python'
+        return 'time java ./%'
+    elseif &filetype == 'go'
+        return 'time ./%<'
     elseif &filetype == 'sh'
         return 'zsh %'
     endif
 endfunc
 
-map <F9> :call Compile()<CR>
+map <F9> :call EchoRun(GetCompileCommand())<CR>
 imap <F9> <ESC><F9>
 
 map <F10> :call EchoRun(GetRunCommand())<CR>
@@ -200,9 +255,9 @@ imap <F10> <ESC><F10>
 map <S-F10> :call EchoRun(GetRunCommand() . ' < %<.in > %<.out')<CR>
 imap <S-F10> <ESC><S-F10>
 
-map <F8> <F9><F10>
+map <F8> :call EchoRun(GetCompileCommand() . " && echo '--- runing ---'" . " && " . GetRunCommand())<CR>
 imap <F8> <ESC><F8>
-map <S-F8> <F9><S-F10>
+map <S-F8> :call EchoRun(GetCompileCommand() . " && echo '--- runing ---'" . ' && ' . GetRunCommand() . ' < %<.in > %<.out')<CR>
 imap <S-F8> <ESC><S-F8>
 
 " ---------------------- Test Data -----------------------------
@@ -215,63 +270,52 @@ imap <S-F12> <ESC><S-F12>a
 " nmap <C-S-F12> 100<C-W>l<C-W>h:wq<CR>:wq<CR>:wq<CR>
 " imap <C-S-F12> <ESC><C-S-F12>a
 
-" ---------------------- MAP-Functions -------------------------
-map <home> ^
-imap <home> <c-o>^
-nmap <tab> :
-noremap 0 ^
-inoremap <C-F> <C-n>
-inoremap <C-E> <C-O>A
-inoremap <C-L> <del>
-noremap J L
-noremap K H
-noremap H ^
-noremap L $
-map ` :noh<CR>
-vmap <Left> h
-vmap <Right> l
-vmap <Up> k
-vmap <Down> j
-inoremap <C-Up> <c-o><c-e>
-inoremap <C-Down> <c-o><c-y>
-nnoremap <C-Up> <c-e>
-nnoremap <C-Down> <c-y>
-map <C-j> 7j
-map <C-k> 7k
-map <C-h> 7h
-map <C-l> 7l
-nnoremap <Space> :
-vmap <BS> c
-inoremap <c-f> <c-n>
-set backspace=indent,eol,start whichwrap+=<,>,[,]
 
 " ---------------------- My Functions --------------------------
 inoremap <leader>memset <ESC><Right>b"aywdwamemset(<C-R>a, 0, sizeof(<C-R>a));
-nnoremap <leader>s <Right>b"bye/\<<C-r>b\><CR>
-inoremap <leader>s <ESC><Right>b"bye/\<<C-r>b\><CR>
 nnoremap <leader>m I(<ESC>A<left>) %= mod<ESC>j
 inoremap <leader>mod <ESC>I(<ESC>A<left>) %= mod
 vnoremap <leader>l ^<C-V>I//<ESC>
 vnoremap <leader>. ^<c-v>I//<esc>
-nnoremap <leader>. I//<ESC>j
-nnoremap <leader>,  ^d2lj
-vnoremap <leader>h <C-V>^2ld
+vnoremap <leader>, <C-V>^2ld
 inoremap <leader>freopen freopen("<C-r>%<C-w>in", "r", stdin);<CR>freopen("<c-r>%<c-w>out", "w", stdout);
-inoremap <leader>format <C-O>:! clang-format -i %<CR>
+" inoremap <leader>format <C-O>:! clang-format -i %<CR>
+
+" if has('mac')
+"     function SwitchInput()
+"         let w:stored_input = split(system('input_selector current'))[0]
+"         if w:stored_input != "com.apple.keylayout.ABC"
+"             exec system('input_selector select com.apple.keylayout.ABC')
+"         endif
+"     endfunction
+"     set ttimeoutlen=100
+"     call SwitchInput()
+"     autocmd InsertLeave * call SwitchInput()
+"     autocmd InsertEnter * {
+"         if !exists("w:stored_input") 
+"             w:stored_input = split(system('input_selector current'))[0]
+"         endif
+"         if split(system('input_selector current'))[0] != w:stored_input
+"             exec system("input_selector select " .. w:stored_input)
+"         endif
+"     }
+" endif
 
 " ---------------------- extensions ----------------------------
 
 source ~/.vim/extensions/main.vim
-if filereadable(expand('~/.vim/extensions/local.vim'))
-    source ~/.vim/extensions/local.vim
-endif
 
 autocmd BufNewFile Makefile {
     exec 'read ~/.vim/templates/Makefile'
     normal kdd
     call cursor(1, 1)
 }
-let g:author = "hydropek <hydropek@outlook.com>"
+autocmd BufNewFile cmake {
+    exec 'read ~/.vim/templates/CMakeLists.txt'
+    normal kdd
+    call cursor(1, 1)
+}
+let g:author = "Cauphenuny <https://cauphenuny.github.io/>"
 autocmd BufNewFile *.cpp {
     call setline(1, "// author: " .. g:author)
     exec 'read ~/.vim/templates/default.cpp'
@@ -282,6 +326,10 @@ autocmd BufNewFile *.c {
     exec 'read ~/.vim/templates/default.c'
     call cursor(1, 1)
 }
+autocmd BufNewFile *.typ {
+    exec 'read ~/.vim/templates/preamble.typ'
+    normal kdd
+}
 autocmd BufNewFile *.py {
     call setline(1, '#!/usr/bin/env python3')
     call setline(2, "# author: " .. g:author)
@@ -290,3 +338,6 @@ autocmd BufNewFile *.sh {
     call setline(1, '#!/usr/bin/env zsh')
     call setline(2, "# author: " .. g:author)
 }
+
+set dictionary+=/usr/share/dict/words
+inoremap <C-F> <C-X><C-K>

@@ -1,0 +1,46 @@
+" ---------------------- Global settings -----------------------
+set relativenumber
+autocmd InsertEnter * set norelativenumber
+autocmd InsertLeave * set relativenumber
+set number
+set ruler
+set showcmd
+set mouse=a
+set cursorline
+set cursorcolumn
+set nocompatible
+
+set expandtab
+autocmd FileType make set noexpandtab
+set smarttab
+set autoindent
+set smartindent
+set autochdir
+set autowrite
+set autoread
+set hlsearch
+set incsearch
+
+" ---------------------- MAP-Functions -------------------------
+map <home> ^
+imap <home> <c-o>^
+inoremap <C-L> <del>
+
+map <down> 7j
+map <up> 7k
+map <left> 7h
+map <right> 7l
+
+map <C-J> 7j
+map <C-K> 7k
+map <C-H> 7h
+map <C-L> 7l
+
+nmap <tab> :
+set backspace=indent,eol,start whichwrap+=<,>,[,]
+inoremap ,, <esc>
+
+" Delete something, and select other content, then type ",x" the two content will be swapped.
+xnoremap ,x <ESC>`.``gvp``P
+
+" source: https://www.zhihu.com/question/636018229/answer/3386613023
