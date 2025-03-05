@@ -1,15 +1,16 @@
-#import "@local/theme-default:0.1.0": conf
+#import "@local/theme-default:0.1.1": conf
 #show: doc => conf(
   header: "",
   title: "",
   author: "",
   doc
 )
-#show ref: r => text(blue, r)
 #import "@local/math-abbr:1.0.0": *
 #import "@local/typst-sympy-calculator-preset:0.1.0": *
+#import "@local/latex-simulation:1.0.0": *
+#import "@preview/tablem:0.1.0": tablem
 
-#import "@preview/ctheorems:1.1.2": *
+#import "@preview/ctheorems:1.1.3": *
 #let anscolor = black
 #show: thmrules.with(qed-symbol: $square$)
 #let answer(..args) = text(anscolor, thmplain("answer", "答案").with(numbering: none)(..args))

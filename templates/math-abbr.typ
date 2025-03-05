@@ -2,7 +2,7 @@
 #let ii=math.upright("i"); #let ramuno=ii; #let ee=math.upright("e"); #let euler=ee; #let eu=euler;
 #let dx=math.dif+"x"; #let dy=math.dif+"y"; #let dz=math.dif+"z";
 #let du=math.dif+"u"; #let dv=math.dif+"v"; #let dr=math.dif+"r"; #let dt=math.dif+"t";
-#let dxi=math.dif+"xi"; #let dtheta=math.dif+"theta";
+#let dxi=math.dif+math.xi; #let dtheta=math.dif+math.theta;
 #let px=$partial x$; #let py=$partial y$; #let pz=$partial z$;
 #let pu=$partial u$; #let pv=$partial v$; #let pr=$partial r$; #let pt=$partial t$;
 #let pxi=$partial xi$; #let ptheta=$partial theta$; #let part=$partial$;
@@ -11,6 +11,7 @@
 #let ovl=math.overline
 #let pmod(x)=math.quad + "(" + math.mod + x + ")"
 #let res=math.upright("Res")
+#let prod=math.product
 
 #let a0=$a_0$; #let a1=$a_1$; #let a2=$a_2$; #let a3=$a_3$; #let a4=$a_4$; #let a5=$a_5$; #let a6=$a_6$; #let a7=$a_7$; #let a8=$a_8$; #let a9=$a_9$; #let a10=$a_10$; #let a11=$a_11$; #let a12=$a_12$; #let a13=$a_13$; #let a14=$a_14$; #let a15=$a_15$; #let a16=$a_16$; #let a17=$a_17$; #let a18=$a_18$; #let a19=$a_19$; #let a20=$a_20$;
 #let b0=$b_0$; #let b1=$b_1$; #let b2=$b_2$; #let b3=$b_3$; #let b4=$b_4$; #let b5=$b_5$; #let b6=$b_6$; #let b7=$b_7$; #let b8=$b_8$; #let b9=$b_9$; #let b10=$b_10$; #let b11=$b_11$; #let b12=$b_12$; #let b13=$b_13$; #let b14=$b_14$; #let b15=$b_15$; #let b16=$b_16$; #let b17=$b_17$; #let b18=$b_18$; #let b19=$b_19$; #let b20=$b_20$;

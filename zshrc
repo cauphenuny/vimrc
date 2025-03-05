@@ -1,3 +1,6 @@
+zmodload zsh/zprof
+start_time=$(gdate +%s%3N)
+
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
@@ -70,29 +73,16 @@ ZSH_THEME="hydropek" # set by `omz`
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
+export NVM_LAZY_LOAD=true
+export NVM_COMPLETION=true
 plugins=(
+    zsh-nvm
     git
     zsh-autosuggestions
     zsh-syntax-highlighting
 )
 
 source $ZSH/oh-my-zsh.sh
-
-MODE_CURSOR_VIINS="#00ffff blinking bar"
-MODE_CURSOR_REPLACE="$MODE_CURSOR_VIINS #ff0000"
-MODE_CURSOR_VICMD="green blinking block"
-MODE_CURSOR_SEARCH="#ff00ff steady underline"
-MODE_CURSOR_VISUAL="$MODE_CURSOR_VICMD steady bar"
-MODE_CURSOR_VLINE="$MODE_CURSOR_VISUAL #00ffff"
-# MODE_INDICATOR_VIINS='%F{8}[INSERT]%f'
-MODE_INDICATOR_VIINS=''
-MODE_INDICATOR_VICMD='%F{10}[NORMAL]%f'
-MODE_INDICATOR_REPLACE='%F{9}[REPLACE]%f'
-MODE_INDICATOR_SEARCH='%F{13}[SEARCH]%f'
-MODE_INDICATOR_VISUAL='%F{12}[VISUAL]%f'
-MODE_INDICATOR_VLINE='%F{12}[V-LINE]%f'
-RPS1="${MODE_INDICATOR_PROMPT} $RPS1"
-
 
 # User configuration
 
@@ -113,7 +103,6 @@ export MANPATH="/usr/local/man:$MANPATH"
 
 # Compilation flags
 export ARCHFLAGS="-arch x86_64"
-CPPCOMPILER="clang++"
 
 # Set personal aliases, overriding those provided by oh-my-zsh libs,
 # plugins, and themes. Aliases can be placed here, though oh-my-zsh
@@ -123,11 +112,19 @@ CPPCOMPILER="clang++"
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-alias clang-apple='/usr/bin/clang'
-alias clang++-apple='/usr/bin/clang++'
+
+alias etrans='trans -shell en:zh'
+alias ztrans='trans -shell zh:en'
+
+alias copilot='gh copilot'
+alias gcs='gh copilot suggest'
+alias gce='gh copilot explain'
+alias builtin-clang='/usr/bin/clang'
+alias builtin-clang++='/usr/bin/clang++'
 gxx="g++-14"
 cxx="clang++"
 
+alias gcc="gcc-14"
 alias g++="${gxx}"
 alias c++="${cxx}"
 alias g++11="${gxx} -std=c++11"
@@ -149,16 +146,18 @@ export CLICOLOR=1
 
 # env var setting
 
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-
 export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
 export PKG_CONFIG_PATH="$(find /opt/homebrew/Cellar -name 'pkgconfig' -type d -maxdepth 4 | grep lib/pkgconfig | tr '\n' ':' | sed s/.$//):$PKG_CONFIG_PATH"
+
+path=($path '/Users/ycp/.cargo/bin')
 
 path=('/usr/local/bin' $path)
 typeset -U path
 export PATH
+
+alias ls="ls -GF"
+
+alias lst="eza -lTF"
 
 # other functions
 
@@ -178,7 +177,7 @@ function proxy() {
     "clash")
         export http_proxy="http://127.0.0.1:7890"
         export https_proxy=$http_proxy
-        export ALL_PROXY="socks5://127.0.0.1:7891"
+        export ALL_PROXY="socks6://127.0.0.1:7891"
         echo "HTTP Proxy enabled $http_proxy \e[2m(clash)$reset_color"
         ;;
     "off")
@@ -220,6 +219,7 @@ function tempdir_w() {
     cd $dir
 }
 alias tempdir=tempdir_d
+alias course="cd ~/Documents/课程文件"
 
 function transay() {
     trans -s en -t zh $1
@@ -262,7 +262,7 @@ esac
 
 source ~/.bash_profile
 
-export LDFLAGS="-L/opt/homebrew/opt/llvm/lib/c++"
+alias LSAN="ASAN_OPTIONS=detect_leaks=1"
 
 #fzf
 
@@ -301,70 +301,49 @@ export FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS"\
 
 _gen_fzf_default_opts
 
-fzfselect() {
+fzfpreview() {
     if [ $(tput cols) -lt 120 ]; then
         opt=""
     else
         opt="-lh"
     fi
-    echo $(
-        find "${@:-.}"\
-      | fzf --height 70% --reverse \
-            --preview "\
-                eza -T --level=1 --color=always $opt {}; \
-                if [ -f {} ]; then \
-                    echo \"\n\e[4mPreview$reset_color\"; \
-                    bat --color=always --theme 'Gruvbox Flat Dark' --style=numbers --line-range=:500 {}; \
-                fi" \
-            --preview-window=right:60%
-    )
+    fzf --height 70% --reverse \
+        --preview "\
+            [ -f {} ] && \
+                eza --color=always $opt {} && \
+                echo \"\n\e[4mPreview$reset_color\" && \
+                bat --color=always --theme 'Gruvbox Flat Dark' --style=numbers --line-range=:500 {} \
+            || [ -d {} ] && \
+                eza -T --level=1 --color=always $opt {} \
+            || echo {} | awk '{print \$1}' | xargs tldr --color;\
+            "\
+        --preview-window=right:60%
 }
 
-fopen() {
-    file=$(fzfselect $@)
-    if [ -n "$file" ]; then
-        echo "select: $file"
-        printf "command: "
-        read cmd
-        echo "exec:" $cmd "$file"
-        $cmd "$file"
-    fi
-}
-alias fop=fopen
-
-fvim() {
-    file=$(fzfselect $@)
-    if [ -n "$file" ]; then
-        vim "$file"
-    fi
-}
-alias fvi=fvim
-
-fcode() {
-    file=$(fzfselect $@)
-    if [ -n "$file" ]; then
-        code "$file"
-    fi
-}
-alias fco=fcode
-
-fjump() {
-    dir=$(fzfselect ${@:-.} -type d)
-    if [ -d $dir ]; then
-        echo "jump to $dir"
-        cd "$dir"
+f() {
+    if [ -n "$1" ]; then
+        cmd=$1
+        shift
     else
-        echo "not a directory: $dir"
+        cmd=""
+    fi
+    file=$(find "${@:-.}" | fzfpreview)
+    if [ -s "$file" ] && [ -n "$cmd" ]; then
+        echo "$cmd $file"
+        eval "$cmd" \"$file\"
     fi
 }
-alias fj=fjump
+
+alias fop="f open"
+alias fvi="f vim"
+alias fco="f code"
+alias fcl="f clion"
+fcd(){
+    eval f cd ${@:-.} -type d 
+}
 
 fhistory() {
-    cmd=$(
-        history \
-      | fzf --height 70% --reverse --tac \
-      | awk '{$1=""; print $0}'
-    )
+    cmd=$(history | awk '{$1=""; print $0}' | tac | fzfpreview)
     if [ -n "$cmd" ]; then
         echo '$'$cmd
         printf "exec? "
@@ -375,3 +354,30 @@ fhistory() {
     fi
 }
 alias fhis=fhistory
+
+fj() {
+    dir=$(autojump -s | awk '/^-*$/{exit} {print $2}' | tac | fzfpreview)
+    cmd=${@:-cd}
+    if [ -d "$dir" ]; then
+        echo $cmd "$dir"
+        eval $cmd "$dir"
+    elif [ -n "$dir" ]; then
+        echo "No such directory: $dir"
+        autojump --purge
+        return 1
+    fi
+}
+alias ccat="bat --theme 'Gruvbox Flat Dark' --style=numbers"
+
+export CPPFRONT_INCLUDE="/usr/local/include/cppfront"
+
+# >>> xmake >>>
+test -f "/Users/ycp/.xmake/profile" && source "/Users/ycp/.xmake/profile"
+# <<< xmake <<<
+
+export CFLAGS="-DLOCAL "
+export CXXFLAGS="-DLOCAL -std=c++17 "
+
+end_time=$(gdate +%s%3N)
+elapsed_time=$(($end_time - $start_time))
+echo "Initialized in ${elapsed_time} ms"

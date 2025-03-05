@@ -36,7 +36,6 @@ map <C-K> 7k
 map <C-H> 7h
 map <C-L> 7l
 
-nmap <tab> :
 set backspace=indent,eol,start whichwrap+=<,>,[,]
 inoremap ,, <esc>
 

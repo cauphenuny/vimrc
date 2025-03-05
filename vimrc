@@ -91,7 +91,7 @@ autocmd Filetype c,cpp {
 
 autocmd Filetype cpp {
     b:cc.compiler = 'clang++'
-    b:cc.std = 'c++20'
+    b:cc.std = 'c++23'
 }
 
 autocmd Filetype c {
@@ -215,6 +215,8 @@ func! GetCompileCommand()
         endif
     elseif &filetype == 'haskell'
         return 'ghc %'
+    elseif &filetype == 'rust'
+        return 'rustc %'
     elseif &filetype == 'java'
         return 'javac %'
     elseif &filetype == 'html'
@@ -233,6 +235,8 @@ func! GetRunCommand()
         else
             return 'time ./%<'
         endif
+    elseif &filetype == 'rust'
+        return 'time ./%<'
     elseif &filetype == 'haskell'
         return 'time ./%<'
     elseif &filetype == 'python'

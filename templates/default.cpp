@@ -24,7 +24,6 @@ bool cmax(T1& a, const T2& b) { return b > a ? (a = b, 1) : 0; }
 template <typename T1, typename T2> 
 bool cmin(T1& a, const T2& b) { return b < a ? (a = b, 1) : 0; }
 // clang-format on
-int main()
-{
+int main() {
     return 0;
 }
