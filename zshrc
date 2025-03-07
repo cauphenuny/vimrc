@@ -113,6 +113,8 @@ export ARCHFLAGS="-arch x86_64"
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
+alias ubuntu='docker run -v $(pwd):/root/workspace --rm -it ubuntu-main zsh -c "cd /root/workspace && exec zsh"'
+
 alias etrans='trans -shell en:zh'
 alias ztrans='trans -shell zh:en'
 
