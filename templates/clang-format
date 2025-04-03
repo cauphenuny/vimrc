@@ -20,7 +20,7 @@ BreakBeforeBinaryOperators: false
 IndentWidth: 4
 TabWidth: 4
 IncludeBlocks: Regroup
-IndentPPDirectives: AfterHash
+# IndentPPDirectives: AfterHash
 UseTab: Never
 SortIncludes: true
 PointerAlignment: Left

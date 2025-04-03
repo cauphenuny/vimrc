@@ -20,6 +20,13 @@ set autowrite
 set autoread
 set hlsearch
 set incsearch
+set tabstop=4
+set softtabstop=4
+set shiftwidth=4
+
+autocmd FileType yaml,lua set tabstop=2
+autocmd FileType yaml,lua set softtabstop=2
+autocmd FileType yaml,lua set shiftwidth=2
 
 " ---------------------- MAP-Functions -------------------------
 map <home> ^

@@ -9,6 +9,12 @@ autocmd FileType yaml {
     set shiftwidth=2
 }
 
+autocmd FileType lua {
+    set tabstop=2
+    set softtabstop=2
+    set shiftwidth=2
+}
+
 if exists('$TMUX')
   let &t_SI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=1\x7\<Esc>\\"
   let &t_EI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=0\x7\<Esc>\\"
@@ -319,7 +325,7 @@ autocmd BufNewFile cmake {
     normal kdd
     call cursor(1, 1)
 }
-let g:author = "Cauphenuny <https://cauphenuny.github.io/>"
+let g:author = "cauphenuny"
 autocmd BufNewFile *.cpp {
     call setline(1, "// author: " .. g:author)
     exec 'read ~/.vim/templates/default.cpp'

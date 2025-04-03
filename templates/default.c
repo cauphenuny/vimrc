@@ -1,16 +1,10 @@
-#include <ctype.h>
+#include <stdbool.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
-#define debugf(...) fprintf(stderr, __VA_ARGS__)
-#if defined(__clang__) || defined(__GNUC__)
-#define debugv(fmt, ...) \
-    fprintf(stderr, "%s:%d: " fmt "\n", __func__, __LINE__, ##__VA_ARGS__)
-#else
-#define debugv(fmt, ...) \
-    fprintf(stderr, "%s:%d: " fmt "\n", __func__, __LINE__, __VA_ARGS__)
-#endif
+#include <string.h>
+#define debugf(...)      fprintf(stderr, __VA_ARGS__)
+#define debugv(fmt, ...) debugf("%s:%d: " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__)
 
-int main(int argc, char *argv[]) {
+int main() {
     return 0;
 }
