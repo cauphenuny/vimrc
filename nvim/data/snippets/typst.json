@@ -1,0 +1,1 @@
+{"preamble":{"prefix":"preamble","body":["#import \"preamble.typ\": *","#show: doc => conf(","  title: \"${1:}\",","  doc,",")"]},"exercise":{"prefix":"exercise","body":["#exercise(\"${1:}\")[","  ${2:}","]"]},"solution":{"body":["#solution[","  ${1:}","]"],"prefix":"solution"}}

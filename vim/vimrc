@@ -1,19 +1,18 @@
 source ~/.vim/common_vimrc 
 
-set tabstop=4
-set softtabstop=4
-set shiftwidth=4
-autocmd FileType yaml {
-    set tabstop=2
-    set softtabstop=2
-    set shiftwidth=2
-}
+set encoding=utf-8
+set fileencoding=utf-8
 
-autocmd FileType lua {
-    set tabstop=2
-    set softtabstop=2
-    set shiftwidth=2
-}
+function! SetIndent(indent)
+    execute 'set tabstop=' . a:indent
+    execute 'set softtabstop=' . a:indent
+    execute 'set shiftwidth=' . a:indent
+endfunction
+
+call SetIndent(4)
+
+autocmd FileType yaml call SetIndent(2)
+autocmd FileType lua call SetIndent(2)
 
 if exists('$TMUX')
   let &t_SI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=1\x7\<Esc>\\"
@@ -88,22 +87,26 @@ colorscheme gruvbox8
 
 " ---------------------- Compile and Run  ----------------------
 
+func! CCPreset()
+    let g:cc = {}
+    let g:cc.opts = ['-Wall', '-Wextra', '-Wshadow', '-DLOCAL']
+    let g:cc.pkgs = []
+endfunc
+
+func! CPreset()
+    let g:cc.compiler = 'clang'
+    let g:cc.std = 'c99'
+endfunc
+
+func! CXXPreset()
+    let g:cc.compiler = 'clang++'
+    let g:cc.std = 'c++23'
+endfunc
+
 " C Compiling Options (variable in certain buffer)
-autocmd Filetype c,cpp {
-    b:cc = {}
-    b:cc.opts = ['-Wall', '-Wextra', '-Wshadow', '-DLOCAL']
-    b:cc.pkgs = []
-}
-
-autocmd Filetype cpp {
-    b:cc.compiler = 'clang++'
-    b:cc.std = 'c++23'
-}
-
-autocmd Filetype c {
-    b:cc.compiler = 'clang'
-    b:cc.std = 'c99'
-}
+autocmd Filetype c,cpp call CCPreset()
+autocmd Filetype cpp call CXXPreset()
+autocmd Filetype c call CPreset()
 
 let g:ccenv_dir = expand('~/.vim/cache/ccenv/')
 
@@ -123,7 +126,7 @@ func! SaveOption()
     let name = split(system('pwd | md5sum'))[0]
     let file = g:ccenv_dir . name
     call system('touch '.file)
-    let info = b:cc.compiler . ' ' . b:cc.std . '\n' . join(b:cc.opts).'\n'.join(b:cc.pkgs)
+    let info = g:cc.compiler . ' ' . g:cc.std . '\n' . join(g:cc.opts).'\n'.join(g:cc.pkgs)
     call system('echo "'.info.'" > '.file)
 endfunc
 
@@ -133,58 +136,58 @@ func! ReadOption()
     if filereadable(file)
         let lines = readfile(file)
         let basic = split(lines[0])
-        let b:cc.opts = split(lines[1])
-        let b:cc.pkgs = split(lines[2])
-        let b:cc.compiler = basic[0]
-        let b:cc.std = basic[1]
+        let g:cc.opts = split(lines[1])
+        let g:cc.pkgs = split(lines[2])
+        let g:cc.compiler = basic[0]
+        let g:cc.std = basic[1]
     endif
 endfunc
 
 autocmd FileType c,cpp call ReadOption()
 
 func! OptOn(opt)
-    let idx = index(b:cc.opts, a:opt)
+    let idx = index(g:cc.opts, a:opt)
     if idx == -1
-        call add(b:cc.opts, a:opt)
+        call add(g:cc.opts, a:opt)
         call SaveOption()
     endif
 endfunc
 
 func! OptOff(opt)
-    let idx = index(b:cc.opts, a:opt)
+    let idx = index(g:cc.opts, a:opt)
     if idx != -1
-        call remove(b:cc.opts, idx)
+        call remove(g:cc.opts, idx)
         call SaveOption()
     endif
 endfunc
 
 func! OptSwitch(opt)
-    let idx = index(b:cc.opts, a:opt)
+    let idx = index(g:cc.opts, a:opt)
     if idx == -1
-        call add(b:cc.opts, a:opt)
+        call add(g:cc.opts, a:opt)
     else
-        call remove(b:cc.opts, idx)
+        call remove(g:cc.opts, idx)
     endif
     call SaveOption()
 endfunc
 
 func! PkgLink(pkg)
-    let idx = index(b:cc.pkgs, a:pkg)
+    let idx = index(g:cc.pkgs, a:pkg)
     if idx == -1
-        call add(b:cc.pkgs, a:pkg)
+        call add(g:cc.pkgs, a:pkg)
     else
-        call remove(b:cc.pkgs, idx)
+        call remove(g:cc.pkgs, idx)
     endif
     call SaveOption()
 endfunc
 
 func! SetCompiler(cpl)
-    let b:cc.compiler = a:cpl
+    let g:cc.compiler = a:cpl
     call SaveOption()
 endfunc
 
 func! SetStd(std)
-    let b:cc.std = a:std
+    let g:cc.std = a:std
     call SaveOption()
 endfunc
 
@@ -202,8 +205,8 @@ func! EchoRun(cmd)
 endfunc
 
 func! GetCompileOption()
-    let opts = join(b:cc.opts)
-    for pkg in b:cc.pkgs
+    let opts = join(g:cc.opts)
+    for pkg in g:cc.pkgs
         let opts .= ' $(pkg-config --cflags --libs '.pkg.')'
     endfor
     return opts
@@ -217,7 +220,7 @@ func! GetCompileCommand()
         if filereadable(expand("./Makefile"))
             return 'make'
         else
-            return b:cc.compiler.' % -o %< -std='.b:cc.std.' '.GetCompileOption()
+            return g:cc.compiler.' % -o %< -std='.g:cc.std.' '.GetCompileOption()
         endif
     elseif &filetype == 'haskell'
         return 'ghc %'
@@ -313,41 +316,42 @@ inoremap <leader>freopen freopen("<C-r>%<C-w>in", "r", stdin);<CR>freopen("<c-r>
 
 " ---------------------- extensions ----------------------------
 
-source ~/.vim/extensions/main.vim
-
-autocmd BufNewFile Makefile {
-    exec 'read ~/.vim/templates/Makefile'
-    normal kdd
-    call cursor(1, 1)
-}
-autocmd BufNewFile cmake {
-    exec 'read ~/.vim/templates/CMakeLists.txt'
-    normal kdd
-    call cursor(1, 1)
-}
-let g:author = "cauphenuny"
-autocmd BufNewFile *.cpp {
-    call setline(1, "// author: " .. g:author)
-    exec 'read ~/.vim/templates/default.cpp'
-    call cursor(1, 1)
-}
-autocmd BufNewFile *.c {
-    call setline(1, "// author: " .. g:author)
-    exec 'read ~/.vim/templates/default.c'
-    call cursor(1, 1)
-}
-autocmd BufNewFile *.typ {
-    exec 'read ~/.vim/templates/preamble.typ'
-    normal kdd
-}
-autocmd BufNewFile *.py {
-    call setline(1, '#!/usr/bin/env python3')
-    call setline(2, "# author: " .. g:author)
-}
-autocmd BufNewFile *.sh {
-    call setline(1, '#!/usr/bin/env zsh')
-    call setline(2, "# author: " .. g:author)
-}
+if has('vim9script')
+    source ~/.vim/extensions/main.vim
+    autocmd BufNewFile Makefile {
+        exec 'read ~/.vim/templates/Makefile'
+        normal kdd
+        call cursor(1, 1)
+    }
+    autocmd BufNewFile cmake {
+        exec 'read ~/.vim/templates/CMakeLists.txt'
+        normal kdd
+        call cursor(1, 1)
+    }
+    let g:author = "cauphenuny"
+    autocmd BufNewFile *.cpp {
+        call setline(1, "// author: " .. g:author)
+        exec 'read ~/.vim/templates/default.cpp'
+        call cursor(1, 1)
+    }
+    autocmd BufNewFile *.c {
+        call setline(1, "// author: " .. g:author)
+        exec 'read ~/.vim/templates/default.c'
+        call cursor(1, 1)
+    }
+    autocmd BufNewFile *.typ {
+        exec 'read ~/.vim/templates/preamble.typ'
+        normal kdd
+    }
+    autocmd BufNewFile *.py {
+        call setline(1, '#!/usr/bin/env python3')
+        call setline(2, "# author: " .. g:author)
+    }
+    autocmd BufNewFile *.sh {
+        call setline(1, '#!/usr/bin/env zsh')
+        call setline(2, "# author: " .. g:author)
+    }
+endif
 
 set dictionary+=/usr/share/dict/words
 inoremap <C-F> <C-X><C-K>

@@ -16,4 +16,6 @@ void debug_exp(const char* keys, const T& value, const Args&... rest) {
 template <class T1, class T2> bool cmax(T1& a, const T2& b) { return b > a ? (a = b, 1) : 0; }
 template <class T1, class T2> bool cmin(T1& a, const T2& b) { return b < a ? (a = b, 1) : 0; }
 
-int main() { return 0; }
+int main() {
+    return 0;
+}
