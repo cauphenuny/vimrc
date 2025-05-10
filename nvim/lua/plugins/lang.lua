@@ -1,3 +1,14 @@
+local function open_chrome()
+  if vim.fn.has("mac") == 1 then
+    vim.fn.system([[
+      osascript -e 'tell application "Google Chrome"
+          activate
+          make new window
+          delay 1
+      end tell'
+    ]])
+  end
+end
 return {
   {
     "nvim-treesitter",
@@ -13,6 +24,15 @@ return {
     opts = {
       dependencies_bin = { ["tinymist"] = "tinymist" },
     },
+    config = function(_, opts)
+      require("typst-preview").setup(opts)
+      local wk = require("which-key")
+      wk.add({
+        { "<localleader>t", group = "typst-preview" },
+        { "<localleader>tc", open_chrome, desc = "Open Chrome Window" },
+        { "<localleader>tp", "<cmd>TypstPreview<cr>", desc = "Open Typst Preview" },
+      })
+    end,
   },
   -- Tex
   {
@@ -31,7 +51,7 @@ return {
         ["context (luatex)"] = "-pdf -pdflatex=context",
         ["context (xetex)"] = "-pdf -pdflatex='texexec --xtx'",
       }
-      -- vim.g.vimtex_view_method = "zathura"
+      vim.g.vimtex_view_method = "skim"
     end,
   },
   {

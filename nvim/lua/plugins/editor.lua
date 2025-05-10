@@ -5,18 +5,19 @@
 -- normal, [a / ]a / [A / ]A: jump among parameters
 -- normal::outline, <C-p> / <C-n>: down/up and jump
 
+local snippets_dir = vim.fn.stdpath("config") .. "/data/snippets"
+
 return {
   -- auto detect indent
   {
     "tpope/vim-sleuth",
   },
 
-  -- edit snippets
-
+  -- snippets
   {
     "chrisgrieser/nvim-scissors",
     opts = {
-      snippetDir = vim.fn.stdpath("config") .. "/data/snippets",
+      snippetDir = snippets_dir,
     },
   },
 
@@ -35,15 +36,32 @@ return {
       },
       keymap = {
         preset = "super-tab",
-
         ["<C-j>"] = { "select_next", "fallback" },
         ["<C-k>"] = { "select_prev", "fallback" },
+        -- LSP completions only
+        ["<C-l>"] = {
+          function(cmp)
+            cmp.show({ providers = { "lsp" } })
+          end,
+        },
+        -- Snippet completions only
+        ["<C-s>"] = {
+          function(cmp)
+            cmp.show({ providers = { "snippets" } })
+          end,
+        },
+        -- Buffer completions only
+        ["<C-b>"] = {
+          function(cmp)
+            cmp.show({ providers = { "buffer" } })
+          end,
+        },
       },
       sources = {
         providers = {
           snippets = {
             opts = {
-              search_paths = { vim.fn.stdpath("config") .. "/data/snippets" },
+              search_paths = { snippets_dir },
             },
           },
         },
@@ -64,6 +82,7 @@ return {
     "skywind3000/vim-terminal-help",
     init = function()
       vim.g.terminal_key = "<c-.>"
+      vim.g.terminal_height = 15
     end,
   },
 
@@ -94,6 +113,17 @@ return {
     "puremourning/vimspector",
     config = function()
       vim.g.vimspector_enable_mappings = "HUMAN"
+    end,
+  },
+  {
+    "skywind3000/asyncrun.vim",
+    config = function()
+      local wk = require("which-key")
+      wk.add({
+        { "<localleader>a", group = "asyncrun" },
+        { "<localleader>ar", ":AsyncRun", desc = "Run Asyncrun" },
+        { "<localleader>as", "<cmd>AsyncStop<cr>", desc = "Stop Asyncrun" },
+      })
     end,
   },
   {

@@ -41,6 +41,7 @@ return {
         verible = {
           cmd = { "verible-verilog-ls", "--indentation_spaces=8", "--wrap_spaces=8" },
         },
+        basedpyright = {},
         texlab = {
           build = {
             executable = "latexmk",

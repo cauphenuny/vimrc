@@ -16,13 +16,11 @@ map("", "<C-k>", "<C-w>k", { desc = "Goto Up Window" })
 map("i", "<D-v>", '<C-o>"+gp')
 map("c", "<D-v>", "<C-r>+")
 map("t", "<D-v>", '<C-\\><C-n>"+gpa')
-map("v", "<S-y>", '"+y')
 
 -- open terminal
 map("i", "<C-.>", "<Esc><C-.>", { remap = true })
 map({ "i", "n" }, "<C-/>", "<C-.>", { remap = true })
 
-local esc_timer
 map("t", "<ESC><ESC>", "<C-\\><C-n>", { desc = "Double escape to normal mode" })
 
 -- Resize window using <ctrl> arrow keys
